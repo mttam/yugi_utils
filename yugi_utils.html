@@ -83,9 +83,17 @@
         }
         .card-image {
             transition: transform 0.2s;
-        }
-        .card-image:hover {
+        }        .card-image:hover {
             transform: scale(1.05);
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -404,8 +412,7 @@
                                 <div class="text-center text-gray-500 dark:text-gray-400">Search for cards to add to your question</div>
                             </div>
                         </div>
-                        <div class="w-full md:w-3/4">
-                            <div id="chatMessages" class="h-64 overflow-y-auto bg-gray-100 dark:bg-dark-700 rounded p-4 mb-4">
+                        <div class="w-full md:w-3/4">                            <div id="chatMessages" class="h-[500px] overflow-y-auto bg-gray-100 dark:bg-dark-700 rounded p-4 mb-4">
                                 <div class="text-center text-gray-500 dark:text-gray-400">Ask the AI judge a question about Yu-Gi-Oh! rules</div>
                             </div>
                             <div class="flex">
@@ -602,9 +609,19 @@
             }
             
             return `https://db.ygoprodeck.com/api/v7/cardinfo.php?${searchParams.toString()}`;
-        }
-
-        async function searchCards() {
+        }        async function searchCards() {
+            // Show loading state
+            const cardResults = document.getElementById('cardResults');
+            cardResults.innerHTML = `
+                <div class="col-span-full text-center">
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-circle-notch loading-spinner"></i>
+                        <span>Searching cards...</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('cardPagination').classList.add('hidden');
+            
             try {
                 const apiUrl = buildApiUrl();
                 const response = await fetch(apiUrl);
@@ -833,29 +850,71 @@
                     chatCardResults.innerHTML = '<div class="text-center text-gray-500 dark:text-gray-400">No cards found</div>';
                     return;
                 }
-                
+
                 results.forEach(card => {
                     const cardElement = document.createElement('div');
-                    cardElement.className = 'p-2 hover:bg-gray-200 dark:hover:bg-dark-600 cursor-pointer flex items-center';
+                    cardElement.className = 'p-2 hover:bg-gray-200 dark:hover:bg-dark-600 cursor-pointer';
+                    
+                    const imageUrl = card.card_images?.[0]?.image_url_cropped || card.card_images?.[0]?.image_url;
                     cardElement.innerHTML = `
-                        <span class="truncate flex-grow">${card.name}</span>
-                        <button class="p-1 rounded-full bg-gray-300 dark:bg-dark-500 hover:bg-gray-400 dark:hover:bg-dark-400" 
-                                onclick="addCardToChat('${card.name.replace(/'/g, "\\'")}')">
-                            <i class="fas fa-plus text-xs"></i>
-                        </button>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                ${imageUrl ? 
+                                    `<img src="${imageUrl}" alt="${card.name}" class="h-12 w-12 object-contain">` : 
+                                    '<div class="h-12 w-12 bg-gray-200 dark:bg-dark-600 flex items-center justify-center">No img</div>'
+                                }
+                                <div class="font-bold">${card.name}</div>
+                            </div>
+                            <button class="p-1 rounded-full bg-gray-300 dark:bg-dark-500 hover:bg-gray-400 dark:hover:bg-dark-400 ml-2 flex-shrink-0">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
                     `;
+                    
+                    // Aggiungi l'event listener al pulsante
+                    cardElement.querySelector('button').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        addCardToChat(card);
+                    });
+
                     chatCardResults.appendChild(cardElement);
                 });
             } catch (error) {
                 console.error('Error searching cards:', error);
+                chatCardResults.innerHTML = '<div class="text-center text-red-500">Error searching cards</div>';
             }
         }
 
-        function addCardToChat(cardName) {
+        function addCardToChat(card) {
             const chatInput = document.getElementById('chatInput');
-            chatInput.value += (chatInput.value ? ', ' : '') + cardName;
+            let cardInfo = [];
+            
+            // Nome carta in grassetto
+            cardInfo.push(`**${card.name}**`);
+            
+            // Info base della carta
+            let basicInfo = [];
+            if (card.type) basicInfo.push(card.type);
+            if (card.attribute) basicInfo.push(`ATT: ${card.attribute}`);
+            if (card.level) basicInfo.push(`LV: ${card.level}`);
+            if (card.race) basicInfo.push(card.race);
+            if (card.atk !== undefined) basicInfo.push(`ATK: ${card.atk}`);
+            if (card.def !== undefined) basicInfo.push(`DEF: ${card.def}`);
+            if (basicInfo.length > 0) {
+                cardInfo.push(`(${basicInfo.join(', ')})`);
+            }
+            
+            // Effetto della carta
+            if (card.desc) {
+                cardInfo.push(card.desc);
+            }
+            
+            const formattedCardInfo = cardInfo.join(' - ');
+            chatInput.value = chatInput.value ? `${chatInput.value}, ${formattedCardInfo}` : formattedCardInfo;
             chatInput.focus();
-        }            async function sendChatMessage() {
+        }
+
+        async function sendChatMessage() {
             const message = document.getElementById('chatInput').value.trim();
             if (!message) return;
             
@@ -865,9 +924,21 @@
             // Add user message to chat
             addMessageToChat('user', message);
             
+            // Add loading message
+            const loadingMessage = document.createElement('div');
+            loadingMessage.className = 'chat-message mb-4 p-4 rounded-lg bg-gray-200 dark:bg-dark-600 mr-auto max-w-3/4';
+            loadingMessage.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-circle-notch loading-spinner mr-2"></i>
+                    <span>Judge AI is thinking...</span>
+                </div>
+            `;
+            document.getElementById('chatMessages').appendChild(loadingMessage);
+            
             try {
                 // Call the AI judge using Gemini model
                 const response = await callGeminiModel(message);
+                loadingMessage.remove();
                 addMessageToChat('assistant', response);
             } catch (error) {
                 console.error('Error getting AI response:', error);
@@ -875,9 +946,7 @@
                     'Failed to get response from AI judge. Please try again later.';
                 document.getElementById('chatError').classList.remove('hidden');
             }
-        }
-
-        function addMessageToChat(role, content) {
+        }        function addMessageToChat(role, content) {
             const chatMessages = document.getElementById('chatMessages');
             
             if (chatMessages.children.length === 1 && 
@@ -886,10 +955,19 @@
             }
             
             const messageElement = document.createElement('div');
-            messageElement.className = `chat-message mb-4 p-3 rounded-lg ${role === 'user' ? 
+            messageElement.className = `chat-message mb-4 p-4 rounded-lg ${role === 'user' ? 
                 'bg-blue-100 dark:bg-blue-900 ml-auto max-w-3/4' : 
                 'bg-gray-200 dark:bg-dark-600 mr-auto max-w-3/4'}`;
-            messageElement.textContent = content;
+            
+            // Convert markdown-style formatting to HTML
+            const formattedContent = content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">$1</a>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+            
+            messageElement.innerHTML = formattedContent;
             chatMessages.appendChild(messageElement);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
@@ -897,6 +975,7 @@
             chatHistory.push({role, content});
             if (chatHistory.length > 10) chatHistory.shift();
         }
+
 
         // Toggle Sections
         function setupSectionToggles() {
@@ -1058,4 +1137,3 @@
     </script>
 </body>
 </html>
-``` 
