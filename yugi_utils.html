@@ -547,6 +547,7 @@
         let currentPage = 1;
         const cardsPerPage = 12;
         let currentLang = 'en';
+        let selectedCards = new Set(); // Aggiungo Set per tracciare le carte selezionate
 
         async function loadCardData() {
             const searchParams = new URLSearchParams();
@@ -856,6 +857,8 @@
                     cardElement.className = 'p-2 hover:bg-gray-200 dark:hover:bg-dark-600 cursor-pointer';
                     
                     const imageUrl = card.card_images?.[0]?.image_url_cropped || card.card_images?.[0]?.image_url;
+                    const isSelected = selectedCards.has(card.id);
+                    
                     cardElement.innerHTML = `
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
@@ -865,16 +868,19 @@
                                 }
                                 <div class="font-bold">${card.name}</div>
                             </div>
-                            <button class="p-1 rounded-full bg-gray-300 dark:bg-dark-500 hover:bg-gray-400 dark:hover:bg-dark-400 ml-2 flex-shrink-0">
-                                <i class="fas fa-plus text-xs"></i>
+                            <button class="p-1 rounded-full ${isSelected ? 
+                                'bg-green-500 dark:bg-green-700' : 
+                                'bg-gray-300 dark:bg-dark-500'} hover:opacity-80 ml-2 flex-shrink-0">
+                                <i class="fas ${isSelected ? 'fa-check' : 'fa-plus'} text-xs"></i>
                             </button>
                         </div>
                     `;
                     
                     // Aggiungi l'event listener al pulsante
-                    cardElement.querySelector('button').addEventListener('click', (e) => {
+                    const addButton = cardElement.querySelector('button');
+                    addButton.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        addCardToChat(card);
+                        toggleCardSelection(card, addButton);
                     });
 
                     chatCardResults.appendChild(cardElement);
@@ -885,70 +891,81 @@
             }
         }
 
-        function addCardToChat(card) {
-            const chatInput = document.getElementById('chatInput');
-            let cardInfo = [];
-            
-            // Nome carta in grassetto
-            cardInfo.push(`**${card.name}**`);
-            
-            // Info base della carta
-            let basicInfo = [];
-            if (card.type) basicInfo.push(card.type);
-            if (card.attribute) basicInfo.push(`ATT: ${card.attribute}`);
-            if (card.level) basicInfo.push(`LV: ${card.level}`);
-            if (card.race) basicInfo.push(card.race);
-            if (card.atk !== undefined) basicInfo.push(`ATK: ${card.atk}`);
-            if (card.def !== undefined) basicInfo.push(`DEF: ${card.def}`);
-            if (basicInfo.length > 0) {
-                cardInfo.push(`(${basicInfo.join(', ')})`);
+        function toggleCardSelection(card, button) {
+            if (selectedCards.has(card.id)) {
+                // Deseleziona la carta
+                selectedCards.delete(card.id);
+                button.classList.remove('bg-green-500', 'dark:bg-green-700');
+                button.classList.add('bg-gray-300', 'dark:bg-dark-500');
+                button.querySelector('i').classList.replace('fa-check', 'fa-plus');
+            } else {
+                // Seleziona la carta
+                selectedCards.add(card.id);
+                button.classList.remove('bg-gray-300', 'dark:bg-dark-500');
+                button.classList.add('bg-green-500', 'dark:bg-green-700');
+                button.querySelector('i').classList.replace('fa-plus', 'fa-check');
             }
-            
-            // Effetto della carta
-            if (card.desc) {
-                cardInfo.push(card.desc);
-            }
-            
-            const formattedCardInfo = cardInfo.join(' - ');
-            chatInput.value = chatInput.value ? `${chatInput.value}, ${formattedCardInfo}` : formattedCardInfo;
-            chatInput.focus();
+            updateSelectedCardsDisplay();
         }
 
-        async function sendChatMessage() {
-            const message = document.getElementById('chatInput').value.trim();
-            if (!message) return;
+        function updateSelectedCardsDisplay() {
+            const chatInput = document.getElementById('chatInput');
+            const selectedCardsText = Array.from(selectedCards)
+                .map(cardId => {
+                    const card = cardData.find(c => c.id === cardId);
+                    return card ? card.name : null;
+                })
+                .filter(Boolean)
+                .join(', ');
             
+            chatInput.placeholder = selectedCardsText 
+                ? `Selected cards: ${selectedCardsText}` 
+                : "Ask a ruling question...";
+        }        function sendChatMessage() {
+            const message = document.getElementById('chatInput').value.trim();
+            const selectedCardsInfo = Array.from(selectedCards)
+                .map(cardId => {
+                    const card = cardData.find(c => c.id === cardId);
+                    return card ? `${card.name} (${card.type}): ${card.desc}` : null;
+                })
+                .filter(Boolean)
+                .join('\n\n');
+
+            if (!message && selectedCards.size === 0) return;
+            
+            const fullMessage = selectedCardsInfo 
+                ? `Cards involved:\n${selectedCardsInfo}\n\nQuestion: ${message}`
+                : message;
+
             document.getElementById('chatInput').value = '';
             document.getElementById('chatError').classList.add('hidden');
+            selectedCards.clear();
+            updateSelectedCardsDisplay();
             
             // Add user message to chat
-            addMessageToChat('user', message);
+            addMessageToChat('user', fullMessage);
             
-            // Add loading message
-            const loadingMessage = document.createElement('div');
-            loadingMessage.className = 'chat-message mb-4 p-4 rounded-lg bg-gray-200 dark:bg-dark-600 mr-auto max-w-3/4';
-            loadingMessage.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-circle-notch loading-spinner mr-2"></i>
-                    <span>Judge AI is thinking...</span>
-                </div>
-            `;
-            document.getElementById('chatMessages').appendChild(loadingMessage);
+            // Add thinking message
+            const thinkingMessage = addMessageToChat('assistant', 'Judge AI is thinking...');
             
-            try {
-                // Call the AI judge using Gemini model
-                const response = await callGeminiModel(message);
-                loadingMessage.remove();
+            // Call AI model and update chat
+            callGeminiModel(fullMessage).then(response => {
+                // Remove thinking message and add AI response
+                if (thinkingMessage) {
+                    thinkingMessage.remove();
+                }
                 addMessageToChat('assistant', response);
-            } catch (error) {
-                console.error('Error getting AI response:', error);
-                document.getElementById('chatError').textContent = 
-                    'Failed to get response from AI judge. Please try again later.';
-                document.getElementById('chatError').classList.remove('hidden');
-            }
+            }).catch(error => {
+                if (thinkingMessage) {
+                    thinkingMessage.remove();
+                }
+                addMessageToChat('assistant', 'Sorry, there was an error processing your request.');
+                console.error('Error calling AI model:', error);
+            });
         }        function addMessageToChat(role, content) {
             const chatMessages = document.getElementById('chatMessages');
             
+            // Clear initial message if it exists
             if (chatMessages.children.length === 1 && 
                 chatMessages.children[0].classList.contains('text-center')) {
                 chatMessages.innerHTML = '';
@@ -974,6 +991,9 @@
             // Add to history and limit to last 10 messages
             chatHistory.push({role, content});
             if (chatHistory.length > 10) chatHistory.shift();
+            
+            // Return the message element so it can be removed later if needed
+            return messageElement;
         }
 
 
