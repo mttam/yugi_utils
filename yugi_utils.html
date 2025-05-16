@@ -59,7 +59,11 @@
             }
             .life-points-section {
                 transform: rotate(90deg);
-                
+                transform-origin: center;
+                scale: 0.8;
+                align-items: center;
+                justify-content: center;
+                        
             }
         }
         @media (min-width: 769px) {
@@ -120,15 +124,15 @@
         </header>
 
         <main class="flex flex-col md:flex-row flex-wrap justify-between">            <!-- Life Points Calculator -->
-            <section class="tool-section life-points-section bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
+            <section class="tool-section  bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-semibold">Life Points Calculator</h2>
                     <button id="lpToggle" class="p-2 rounded-full bg-gray-200 dark:bg-dark-700">
                         <i class="fas fa-chevron-down"></i>
                     </button>
                 </div>
-                <div id="lpContent" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div id="lpContent" class="space-y-6 life-points-section">
+                    <div class="flex flex-row md:grid md:grid-cols-2 gap-6">
                         <!-- Player 1 -->
                         <div class="bg-gray-100 dark:bg-dark-700 p-4 rounded-lg">
                             <div class="flex justify-between items-center mb-2">
@@ -1119,9 +1123,9 @@
             const sections = [
                 { id: 'lp', defaultOpen: true },
                 { id: 'timer', defaultOpen: true },
-                { id:'calculator',defaultOpen: true },
-                { id: 'dice', defaultOpen: true },
-                { id: 'coin', defaultOpen: true },
+                { id:'calculator',defaultOpen: false },
+                { id: 'dice', defaultOpen: false },
+                { id: 'coin', defaultOpen: false },
                 { id: 'card', defaultOpen: false },
                 { id: 'chat', defaultOpen: false }
             ];
