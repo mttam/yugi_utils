@@ -62,12 +62,14 @@
             .life-points-section {
                 
                 transform: rotate(90deg);
-                width: 30%;
-                height: 80%;
                 transform-origin: center;
                 align-items: center;
                 justify-content: center;
                       
+            }
+            .life-points-divs{
+                width: 50%;
+                height: 50%;
             }
         }
         @media (min-width: 769px) {
@@ -140,7 +142,7 @@
                 <div id="lpContent" class="space-y-6 life-points-section">
                     <div class="flex flex-row md:grid md:grid-cols-2 gap-6">
                         <!-- Player 1 -->
-                        <div class="bg-gray-100 dark:bg-dark-700 p-4 rounded-lg">
+                        <div class="bg-gray-100 dark:bg-dark-700 p-4 rounded-lg life-points-divs">
                             <div class="flex justify-between items-center mb-2">
                                 <h3 class="text-lg font-medium">Player 1</h3>
                                 <div class="flex space-x-2">
@@ -149,7 +151,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="flex items-center mb-4">
+                            <div class="flex items-center mb-4 ">
                                 <input type="number" id="lp1" value="8000" class="life-points-input text-3xl font-bold w-full bg-transparent border-b-2 border-gray-300 dark:border-dark-600 focus:border-blue-500 focus:outline-none text-center">
                             </div>
                             <!-- Custom LP Change -->
@@ -179,7 +181,7 @@
                         </div>
 
                         <!-- Player 2 -->
-                        <div class="bg-gray-100 dark:bg-dark-700 p-4 rounded-lg">
+                        <div class="bg-gray-100 dark:bg-dark-700 p-4 rounded-lg life-points-divs">
                             <div class="flex justify-between items-center mb-2">
                                 <h3 class="text-lg font-medium">Player 2</h3>
                                 <div class="flex space-x-2">
@@ -218,7 +220,7 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-center space-x-4">
+                    <div class="flex justify-center space-x-4 life-points-divs">
                         <button onclick="resetAllLP()" class="px-4 py-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
                             <i class="fas fa-redo mr-2"></i>Reset All
                         </button>
