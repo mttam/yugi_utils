@@ -6,6 +6,8 @@
     <meta name="description" content="Yugi Utils - Essential tools for Yu-Gi-Oh! players">
     <meta name="theme-color" content="#111827">
     <title>Yugi Utils</title>
+    <link rel="icon" href="icon.ico" type="image/x-icon">  <link rel="icon" href="icon.ico" sizes="32x32" type="icon">
+    <link rel="icon" href="icon.ico" sizes="16x16" type="icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -110,6 +112,7 @@
 <body class="bg-gray-100 dark:bg-dark-900 text-gray-900 dark:text-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <header class="flex flex-col items-center mb-8">
+            <img src="icon-removebg.png" alt="Yugi Utils Logo" class="w-32 h-32 mb-4">
             <h1 class="text-4xl font-bold mb-2">Yugi Utils</h1>
             <p class="text-lg text-gray-600 dark:text-gray-400">Essential tools for Yu-Gi-Oh! players</p>
             <div class="flex items-center mt-4">
@@ -123,7 +126,8 @@
             </div>
         </header>
 
-        <main class="flex flex-col md:flex-row flex-wrap justify-between">            <!-- Life Points Calculator -->
+        <!-- Life Points Calculator -->
+        <main class="flex flex-col md:flex-row flex-wrap justify-between">            
             <section class="tool-section  bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-semibold">Life Points Calculator</h2>
@@ -220,6 +224,37 @@
                 </div>
             </section>
 
+            <!-- Timer -->
+            <section class="tool-section bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold">Match Timer</h2>
+                    <button id="timerToggle" class="p-2 rounded-full bg-gray-200 dark:bg-dark-700">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div id="timerContent" class="space-y-4">
+                    <div class="flex justify-center items-center">
+                        <div id="timerDisplay" class="text-5xl font-mono font-bold">15:00</div>
+                    </div>
+                    <div class="flex justify-center space-x-4">
+                        <button id="startTimer" class="px-4 py-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
+                            <i class="fas fa-play mr-2"></i>Start
+                        </button>
+                        <button id="pauseTimer" class="px-4 py-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
+                            <i class="fas fa-pause mr-2"></i>Pause
+                        </button>
+                        <button id="resetTimer" class="px-4 py-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
+                            <i class="fas fa-redo mr-2"></i>Reset
+                        </button>
+                    </div>
+                    <div class="flex justify-center items-center space-x-2">
+                        <span>Set Time:</span>
+                        <input type="number" id="minutesInput" min="1" max="60" value="15" class="w-16 p-1 border rounded bg-gray-100 dark:bg-dark-700">
+                        <span>minutes</span>
+                    </div>
+                </div>
+            </section>
+
             <!-- Calculator -->
             <section class="tool-section bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
@@ -251,37 +286,6 @@
                             <button onclick="addToCalc('.')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">.</button>
                             <button onclick="calculate()" class="calc-btn p-3 bg-blue-500 hover:bg-blue-600 text-white rounded">=</button>
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Timer -->
-            <section class="tool-section bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-semibold">Match Timer</h2>
-                    <button id="timerToggle" class="p-2 rounded-full bg-gray-200 dark:bg-dark-700">
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </div>
-                <div id="timerContent" class="space-y-4">
-                    <div class="flex justify-center items-center">
-                        <div id="timerDisplay" class="text-5xl font-mono font-bold">15:00</div>
-                    </div>
-                    <div class="flex justify-center space-x-4">
-                        <button id="startTimer" class="px-4 py-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
-                            <i class="fas fa-play mr-2"></i>Start
-                        </button>
-                        <button id="pauseTimer" class="px-4 py-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
-                            <i class="fas fa-pause mr-2"></i>Pause
-                        </button>
-                        <button id="resetTimer" class="px-4 py-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
-                            <i class="fas fa-redo mr-2"></i>Reset
-                        </button>
-                    </div>
-                    <div class="flex justify-center items-center space-x-2">
-                        <span>Set Time:</span>
-                        <input type="number" id="minutesInput" min="1" max="60" value="15" class="w-16 p-1 border rounded bg-gray-100 dark:bg-dark-700">
-                        <span>minutes</span>
                     </div>
                 </div>
             </section>
