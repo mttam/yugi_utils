@@ -57,6 +57,10 @@
                 width: 100%;
                 margin-bottom: 1rem;
             }
+            .life-points-section {
+                transform: rotate(90deg);
+                
+            }
         }
         @media (min-width: 769px) {
             .tool-section {
@@ -76,6 +80,7 @@
             margin: 0;
         }
         .life-points-input {
+            appearance: textfield;
             -moz-appearance: textfield;
         }
         .chat-message {
@@ -83,7 +88,8 @@
         }
         .card-image {
             transition: transform 0.2s;
-        }        .card-image:hover {
+        }
+        .card-image:hover {
             transform: scale(1.05);
         }
         
@@ -113,9 +119,8 @@
             </div>
         </header>
 
-        <main class="flex flex-col md:flex-row flex-wrap justify-between">
-            <!-- Life Points Calculator -->
-            <section class="tool-section bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
+        <main class="flex flex-col md:flex-row flex-wrap justify-between">            <!-- Life Points Calculator -->
+            <section class="tool-section life-points-section bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-semibold">Life Points Calculator</h2>
                     <button id="lpToggle" class="p-2 rounded-full bg-gray-200 dark:bg-dark-700">
