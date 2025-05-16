@@ -137,6 +137,16 @@
                             <div class="flex items-center mb-4">
                                 <input type="number" id="lp1" value="8000" class="life-points-input text-3xl font-bold w-full bg-transparent border-b-2 border-gray-300 dark:border-dark-600 focus:border-blue-500 focus:outline-none text-center">
                             </div>
+                            <!-- Custom LP Change -->
+                            <div class="flex items-center gap-2 mb-4">
+                                <button onclick="decreaseCustomLP(1)" class="p-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" id="customLP1" class="life-points-input w-full p-2 text-center bg-gray-200 dark:bg-dark-600 rounded" value="0">
+                                <button onclick="increaseCustomLP(1)" class="p-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                             <div class="grid grid-cols-3 gap-2 mb-2">
                                 <button onclick="changeLP(1, 50)" class="py-2 px-1 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">+50</button>
                                 <button onclick="changeLP(1, 500)" class="py-2 px-1 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">+500</button>
@@ -166,6 +176,16 @@
                             <div class="flex items-center mb-4">
                                 <input type="number" id="lp2" value="8000" class="life-points-input text-3xl font-bold w-full bg-transparent border-b-2 border-gray-300 dark:border-dark-600 focus:border-blue-500 focus:outline-none text-center">
                             </div>
+                            <!-- Custom LP Change -->
+                            <div class="flex items-center gap-2 mb-4">
+                                <button onclick="decreaseCustomLP(2)" class="p-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" id="customLP2" class="life-points-input w-full p-2 text-center bg-gray-200 dark:bg-dark-600 rounded" value="0">
+                                <button onclick="increaseCustomLP(2)" class="p-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                             <div class="grid grid-cols-3 gap-2 mb-2">
                                 <button onclick="changeLP(2, 50)" class="py-2 px-1 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">+50</button>
                                 <button onclick="changeLP(2, 500)" class="py-2 px-1 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">+500</button>
@@ -187,6 +207,41 @@
                         <button onclick="resetAllLP()" class="px-4 py-2 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">
                             <i class="fas fa-redo mr-2"></i>Reset All
                         </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Calculator -->
+            <section class="tool-section bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold">Calculator</h2>
+                    <button id="calculatorToggle" class="p-2 rounded-full bg-gray-200 dark:bg-dark-700">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div id="calculatorContent" class="space-y-4">
+                    <div class="bg-gray-100 dark:bg-dark-700 p-4 rounded-lg">
+                        <input type="text" id="calcDisplay" class="w-full text-right text-2xl p-2 mb-4 bg-transparent border-b-2 border-gray-300 dark:border-dark-600 focus:border-blue-500 focus:outline-none" readonly value="0">
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="clearCalc()" class="calc-btn col-span-2 p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">C</button>
+                            <button onclick="deleteLastChar()" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded"><i class="fas fa-backspace"></i></button>
+                            <button onclick="addToCalc('/')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">÷</button>
+                            <button onclick="addToCalc('7')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">7</button>
+                            <button onclick="addToCalc('8')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">8</button>
+                            <button onclick="addToCalc('9')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">9</button>
+                            <button onclick="addToCalc('*')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">×</button>
+                            <button onclick="addToCalc('4')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">4</button>
+                            <button onclick="addToCalc('5')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">5</button>
+                            <button onclick="addToCalc('6')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">6</button>
+                            <button onclick="addToCalc('-')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">-</button>
+                            <button onclick="addToCalc('1')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">1</button>
+                            <button onclick="addToCalc('2')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">2</button>
+                            <button onclick="addToCalc('3')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">3</button>
+                            <button onclick="addToCalc('+')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">+</button>
+                            <button onclick="addToCalc('0')" class="calc-btn col-span-2 p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">0</button>
+                            <button onclick="addToCalc('.')" class="calc-btn p-3 bg-gray-200 dark:bg-dark-600 hover:bg-gray-300 dark:hover:bg-dark-500 rounded">.</button>
+                            <button onclick="calculate()" class="calc-btn p-3 bg-blue-500 hover:bg-blue-600 text-white rounded">=</button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -434,7 +489,64 @@
     </div>
 
     <script>
+        // Calculator Functions
+        let calcDisplay = document.getElementById('calcDisplay');
+        let lastResult = null;
+
+        function addToCalc(value) {
+            if (calcDisplay.value === '0' || lastResult !== null) {
+                calcDisplay.value = value;
+                lastResult = null;
+            } else {
+                calcDisplay.value += value;
+            }
+        }
+
+        function clearCalc() {
+            calcDisplay.value = '0';
+            lastResult = null;
+        }
+
+        function deleteLastChar() {
+            if (lastResult !== null) {
+                clearCalc();
+            } else {
+                calcDisplay.value = calcDisplay.value.slice(0, -1);
+                if (calcDisplay.value === '') {
+                    calcDisplay.value = '0';
+                }
+            }
+        }
+
+        function calculate() {
+            try {
+                // Replace × with * and ÷ with /
+                let expression = calcDisplay.value.replace(/×/g, '*').replace(/÷/g, '/');
+                lastResult = eval(expression);
+                calcDisplay.value = Number.isInteger(lastResult) ? lastResult : lastResult.toFixed(2);
+            } catch (error) {
+                calcDisplay.value = 'Error';
+                lastResult = null;
+            }
+        }
+
         // Life Points Functions
+        function increaseCustomLP(player) {
+            const customInput = document.getElementById(`customLP${player}`);
+            const amount = parseInt(customInput.value) || 0;
+            if (amount > 0) {
+                changeLP(player, amount);
+            }
+        }
+
+        function decreaseCustomLP(player) {
+            const customInput = document.getElementById(`customLP${player}`);
+            const amount = parseInt(customInput.value) || 0;
+            if (amount > 0) {
+                changeLP(player, -amount);
+            }
+        }
+
         function changeLP(player, amount) {
             const lpInput = document.getElementById(`lp${player}`);
             let currentLP = parseInt(lpInput.value) || 0;
