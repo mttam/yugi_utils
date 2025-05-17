@@ -58,24 +58,27 @@
             .tool-section {
                 width: 100%;
                 margin-bottom: 1rem;
-                min-height: 90vh;
+                min-height: 100vh;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                overflow: hidden;
             }            .life-points-section {
                 transform: rotate(90deg);
                 transform-origin: center;
-                width: 135%;
+                width: 95vh;
+                max-width: 95vh;
                 height: 100%;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                margin: 2rem -17.5%;
+                margin: 0;
+                padding: 1rem;
             }
             .life-points-section > div {
                 width: 100%;
-                max-width: 480px;
+                max-width: 95vh;
             }
             .life-points-section .grid {
                 display: grid;
