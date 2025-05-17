@@ -61,11 +61,44 @@
                 min-height: 90vh;
                 display: flex;
                 flex-direction: column;
+                align-items: center;
             }
             .life-points-section {
                 transform: rotate(90deg);
+                transform-origin: center;
+                width: 160%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                margin: 6rem -30%;
+            }
+            .life-points-section > div {
                 width: 100%;
-                
+                max-width: 600px;
+            }
+            .life-points-section .grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .life-points-section .grid-cols-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .life-points-section button {
+                width: 100%;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                white-space: nowrap;
+            }
+            .life-points-section .life-points-input {
+                font-size: 2.5rem;
+                text-align: center;
+                width: 100%;
             }
         }
         @media (min-width: 769px) {
