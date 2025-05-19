@@ -3,3 +3,4 @@
 
 [[plugins]]
   package = "netlify-plugin-inline-source"
+  version = "1.0.4"
