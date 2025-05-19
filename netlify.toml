@@ -1,5 +1,5 @@
 [build]
-  environment = { OPENROUTER_API_KEY = "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" }
+  environment = { OPENROUTER_API_KEY = "$OPENROUTER_API_KEY" }
 
 [[plugins]]
   package = "netlify-plugin-inline-source"
