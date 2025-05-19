@@ -927,8 +927,9 @@
 
         // Judge AI Chat Functions
         let chatHistory = [];
-        console.log("DEBUG: window.env =", window.env);
-        const apiKey = window.env.OPENROUTER_API_KEY;
+        console.log("DEBUG: Start of script - window.env =", window.env);
+        const apiKey = window.env?.OPENROUTER_API_KEY;  // Optional chaining
+        console.log("DEBUG: After apiKey assignment - apiKey =", apiKey);
         const BASE_PROMPT = 'devi agire come un judge ufficiale di Yu-Gi-Oh! Riceverai delle domande sul gioco, le sue regole e le interazioni tra le carte. Le tue risposte devono essere chiare, concise e corredate da spiegazioni dettagliate del processo di decisione del giudizio, includendo sempre citazioni da fonti ufficiali (ad esempio, il sito ufficiale di Yu-Gi-Oh! o le pagine ufficiali di Konami). Assicurati che ogni risposta fornisca il ragionamento alla base della decisione, indicandone il processo e citando le fonti ufficiali pertinenti.';
 
         async function callGeminiModel(prompt) {
