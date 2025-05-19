@@ -927,7 +927,7 @@
 
         // Judge AI Chat Functions
         let chatHistory = [];
-        const OPENROUTER_API_KEY = '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';
+        const apiKey = window.env.OPENROUTER_API_KEY;
         const BASE_PROMPT = 'devi agire come un judge ufficiale di Yu-Gi-Oh! Riceverai delle domande sul gioco, le sue regole e le interazioni tra le carte. Le tue risposte devono essere chiare, concise e corredate da spiegazioni dettagliate del processo di decisione del giudizio, includendo sempre citazioni da fonti ufficiali (ad esempio, il sito ufficiale di Yu-Gi-Oh! o le pagine ufficiali di Konami). Assicurati che ogni risposta fornisca il ragionamento alla base della decisione, indicandone il processo e citando le fonti ufficiali pertinenti.';
 
         async function callGeminiModel(prompt) {
@@ -952,7 +952,7 @@
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: {
-                        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                        "Authorization": `Bearer ${apiKey}`,
                         "Content-Type": "application/json",
                         "HTTP-Referer": "https://yugiutils.com",
                         "X-Title": "Yugi Utils"
