@@ -1,5 +1,2 @@
 [build]
-  environment = { OPENROUTER_API_KEY = "$OPENROUTER_API_KEY" }
-
-[[plugins]]
-  package = "netlify-plugin-inline-source"
+  functions = "netlify/functions"

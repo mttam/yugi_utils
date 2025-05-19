@@ -927,12 +927,34 @@
 
         // Judge AI Chat Functions
         let chatHistory = [];
-        console.log("DEBUG: Start of script - window.env =", window.env);
-        const apiKey = window.env?.OPENROUTER_API_KEY;  // Optional chaining
-        console.log("DEBUG: After apiKey assignment - apiKey =", apiKey);
+        let apiKey = null;
+
+        async function getApiKey() {
+            try {
+                const response = await fetch('/.netlify/functions/get-env?name=OPENROUTER_API_KEY');
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                return data.value;
+            } catch (error) {
+                console.error('Error fetching API key:', error);
+                document.getElementById('chatError').textContent = 'Could not initialize AI service';
+                document.getElementById('chatError').classList.remove('hidden');
+                return null;
+            }
+        }
+
         const BASE_PROMPT = 'devi agire come un judge ufficiale di Yu-Gi-Oh! Riceverai delle domande sul gioco, le sue regole e le interazioni tra le carte. Le tue risposte devono essere chiare, concise e corredate da spiegazioni dettagliate del processo di decisione del giudizio, includendo sempre citazioni da fonti ufficiali (ad esempio, il sito ufficiale di Yu-Gi-Oh! o le pagine ufficiali di Konami). Assicurati che ogni risposta fornisca il ragionamento alla base della decisione, indicandone il processo e citando le fonti ufficiali pertinenti.';
 
         async function callGeminiModel(prompt) {
+            if (!apiKey) {
+                apiKey = await getApiKey();
+                if (!apiKey) {
+                    throw new Error('Failed to initialize AI service');
+                }
+            }
+
             const messageContent = [
                 {
                     type: "text",
@@ -970,7 +992,7 @@
                 return data.choices[0]?.message?.content || "I apologize, but I couldn't generate a proper response.";
 
             } catch (error) {
-                console.error("Error calling Gemini model:", error);
+                console.error("Error calling model:", error);
                 throw error;
             }
         }
