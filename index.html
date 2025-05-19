@@ -323,7 +323,33 @@
                 </div>
             </section>
 
-
+            <!-- Opponent's Played Cards -->
+            <section class="tool-section bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold">Opponent's Played Cards</h2>
+                    <button id="opponentToggle" class="p-2 rounded-full bg-gray-200 dark:bg-dark-700">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div id="opponentContent" class="space-y-4 hidden">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="w-full">
+                            <div class="mb-4">
+                                <input type="text" id="opponentSearch" placeholder="Search card..." 
+                                    class="w-full p-2 border rounded bg-gray-100 dark:bg-dark-700">
+                            </div>
+                            <div id="opponentCardsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                <div class="text-center text-gray-500 dark:text-gray-400">No cards played yet</div>
+                            </div>
+                            <div class="mt-4">
+                                <button id="resetOpponentCards" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded">
+                                    <i class="fas fa-trash mr-2"></i> Reset All
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- Card Database -->
             <section class="tool-section bg-white dark:bg-dark-800 rounded-lg shadow-md p-6 mb-6">
@@ -776,17 +802,20 @@
                 if (card.atk !== undefined) cardInfo.push(`ATK: ${card.atk}`);
                 if (card.def !== undefined) cardInfo.push(`DEF: ${card.def}`);
                 
-                cardElement.innerHTML = `
-                    <div class="card-image h-48 bg-gray-100 dark:bg-dark-600 flex items-center justify-center p-2">
-                        ${imageUrl ? `<img src="${imageUrl}" alt="${card.name}" class="h-full object-contain">` : 
-                                   '<div class="text-gray-400">No image</div>'}
-                    </div>
-                    <div class="p-2">
-                        <h3 class="font-bold truncate" title="${card.name}">${card.name}</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">${card.type}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-500">${cardInfo.join(' | ')}</p>
-                    </div>
-                `;
+                    cardElement.innerHTML = `
+                        <div class="card-image h-48 bg-gray-100 dark:bg-dark-600 flex items-center justify-center p-2">
+                            ${imageUrl ? `<img src="${imageUrl}" alt="${card.name}" class="h-full object-contain">` : 
+                                       '<div class="text-gray-400">No image</div>'}
+                        </div>
+                        <div class="p-2">
+                            <h3 class="font-bold truncate" title="${card.name}">${card.name}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${card.type}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-500">${cardInfo.join(' | ')}</p>
+                            <button onclick="addToOpponentCards(event, ${card.id})" class="w-full mt-2 px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm">
+                                + Opponent
+                            </button>
+                        </div>
+                    `;
                 
                 cardElement.addEventListener('click', () => showCardDetails(card));
                 cardResults.appendChild(cardElement);
@@ -868,6 +897,11 @@
                                 <p><strong>Rarity:</strong> ${setInfo.set_rarity}</p>
                             </div>
                         ` : ''}
+                        <div class="mt-4">
+                            <button onclick="addToOpponentCards(event, ${card.id})" class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded">
+                                Add to Opponent's Cards
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -893,7 +927,7 @@
 
         // Judge AI Chat Functions
         let chatHistory = [];
-        const OPENROUTER_API_KEY = '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';
+        const OPENROUTER_API_KEY = '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';
         const BASE_PROMPT = 'devi agire come un judge ufficiale di Yu-Gi-Oh! Riceverai delle domande sul gioco, le sue regole e le interazioni tra le carte. Le tue risposte devono essere chiare, concise e corredate da spiegazioni dettagliate del processo di decisione del giudizio, includendo sempre citazioni da fonti ufficiali (ad esempio, il sito ufficiale di Yu-Gi-Oh! o le pagine ufficiali di Konami). Assicurati che ogni risposta fornisca il ragionamento alla base della decisione, indicandone il processo e citando le fonti ufficiali pertinenti.';
 
         async function callGeminiModel(prompt) {
@@ -905,7 +939,7 @@
             ];
 
             const requestBody = {
-                model: "deepseek/deepseek-chat-v3-0324:free",
+                model: "meta-llama/llama-4-scout:free",
                 messages: [
                     {
                         role: "user",
@@ -1111,6 +1145,7 @@
                 { id: 'lp', defaultOpen: true },
                 { id: 'timer', defaultOpen: true },
                 { id:'calculator',defaultOpen: false },
+                { id:'opponent',defaultOpen:false},
                 { id: 'dice', defaultOpen: false },
                 { id: 'coin', defaultOpen: false },
                 { id: 'card', defaultOpen: false },
@@ -1262,6 +1297,160 @@
             
             // Load card data (will be used when card section is opened)
             loadCardData();
+
+            // Opponent's Played Cards Functionality
+            let opponentCards = [];
+            const opponentSearch = document.getElementById('opponentSearch');
+            const opponentCardsGrid = document.getElementById('opponentCardsGrid');
+            const resetOpponentCards = document.getElementById('resetOpponentCards');
+
+            // Load saved opponent cards
+            function loadOpponentCards() {
+                const savedCards = localStorage.getItem('opponentCards');
+                if (savedCards) {
+                    opponentCards = JSON.parse(savedCards);
+                    renderOpponentCards();
+                }
+            }
+
+            // Save opponent cards to localStorage
+            function saveOpponentCards() {
+                localStorage.setItem('opponentCards', JSON.stringify(opponentCards));
+            }
+
+            // Render opponent cards
+            function renderOpponentCards() {
+                opponentCardsGrid.innerHTML = opponentCards.length ? '' : 
+                    '<div class="text-center text-gray-500 dark:text-gray-400">No cards played yet</div>';
+
+                opponentCards.forEach((card, index) => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'relative bg-white dark:bg-dark-700 rounded-lg shadow overflow-hidden';
+                    
+                    cardElement.innerHTML = `
+                        <div class="card-image h-48 bg-gray-100 dark:bg-dark-600 flex items-center justify-center p-2">
+                            ${card.imageUrl ? 
+                                `<img src="${card.imageUrl}" alt="${card.name}" class="h-full object-contain">` : 
+                                '<div class="text-gray-400">No image</div>'}
+                        </div>
+                        <div class="p-2">
+                            <h3 class="font-bold truncate" title="${card.name}">${card.name}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${card.type}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-500">
+                                ${card.attribute ? `ATT: ${card.attribute} | ` : ''}
+                                ${card.level ? `LV: ${card.level} | ` : ''}
+                                ${card.atk !== undefined ? `ATK: ${card.atk} | ` : ''}
+                                ${card.def !== undefined ? `DEF: ${card.def}` : ''}
+                            </p>
+                        </div>
+                        <button onclick="removeOpponentCard(${index})" class="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    `;
+                    
+                    opponentCardsGrid.appendChild(cardElement);
+                });
+            }
+
+            // Add card to opponent's played cards
+            function addOpponentCard(card) {
+                opponentCards.push({
+                    name: card.name,
+                    type: card.type,
+                    attribute: card.attribute,
+                    level: card.level,
+                    atk: card.atk,
+                    def: card.def,
+                    imageUrl: card.card_images?.[0]?.image_url_cropped || card.card_images?.[0]?.image_url
+                });
+                saveOpponentCards();
+                renderOpponentCards();
+            }
+
+            // Remove card from opponent's played cards
+            window.removeOpponentCard = function(index) {
+                opponentCards.splice(index, 1);
+                saveOpponentCards();
+                renderOpponentCards();
+            };
+
+            // Reset all opponent cards
+            resetOpponentCards.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear all opponent cards?')) {
+                    opponentCards = [];
+                    saveOpponentCards();
+                    renderOpponentCards();
+                }
+            });
+
+            // Search functionality
+            opponentSearch.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                if (!searchTerm) {
+                    renderOpponentCards();
+                    return;
+                }
+                
+                const filtered = opponentCards.filter(card => 
+                    card.name.toLowerCase().includes(searchTerm)
+                );
+                
+                opponentCardsGrid.innerHTML = filtered.length ? '' : 
+                    '<div class="text-center text-gray-500 dark:text-gray-400">No matching cards found</div>';
+                
+                filtered.forEach((card, index) => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'relative bg-white dark:bg-dark-700 rounded-lg shadow overflow-hidden';
+                    
+                    cardElement.innerHTML = `
+                        <div class="card-image h-48 bg-gray-100 dark:bg-dark-600 flex items-center justify-center p-2">
+                            ${card.imageUrl ? 
+                                `<img src="${card.imageUrl}" alt="${card.name}" class="h-full object-contain">` : 
+                                '<div class="text-gray-400">No image</div>'}
+                        </div>
+                        <div class="p-2">
+                            <h3 class="font-bold truncate" title="${card.name}">${card.name}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${card.type}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-500">
+                                ${card.attribute ? `ATT: ${card.attribute} | ` : ''}
+                                ${card.level ? `LV: ${card.level} | ` : ''}
+                                ${card.atk !== undefined ? `ATK: ${card.atk} | ` : ''}
+                                ${card.def !== undefined ? `DEF: ${card.def}` : ''}
+                            </p>
+                        </div>
+                        <button onclick="removeOpponentCard(${opponentCards.indexOf(card)})" 
+                            class="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    `;
+                    
+                    opponentCardsGrid.appendChild(cardElement);
+                });
+            });
+
+            // Add to opponent's cards with 3-card limit
+            window.addToOpponentCards = function(e, cardId) {
+                e.stopPropagation(); // Prevent event from bubbling up
+                
+                const card = cardData.find(c => c.id === cardId);
+                if (!card) return;
+                
+                // Count existing copies of this card
+                const existingCount = opponentCards.filter(c => c.name === card.name).length;
+                
+                if (existingCount >= 3) {
+                    alert(`You can only add up to 3 copies of ${card.name} to opponent's cards`);
+                    return;
+                }
+                
+                addOpponentCard(card);
+            };
+
+            // Load initial opponent cards
+            loadOpponentCards();
+
+            // Add click handler to card database results to allow adding to opponent's cards
+           
         });
     </script>
 </body>
