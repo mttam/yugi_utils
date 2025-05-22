@@ -962,17 +962,17 @@
                 document.getElementById('chatError').textContent = 'Could not load format rules';
                 document.getElementById('chatError').classList.remove('hidden');
             }
-        }
-
-        function getFormatRules(format) {
-            return rulesets[format.replace(' ', '_')] || rulesets['Advanced_Format'];
+        }        function getFormatRules(format) {
+            // Replace all spaces with underscores to match ruleset keys
+            const formatKey = format.replace(/ /g, '_');
+            return rulesets[formatKey] || rulesets['Advanced_Format'];
         }
 
         // Update the BASE_PROMPT to include format-specific rules
         function getBotPrompt(formatRules) {
             return `${BASE_PROMPT}\n\nThis question should be answered according to the following format's rules:\n${formatRules}`;
         }
-        
+
         let chatHistory = [];
         let apiKey = null;
 
