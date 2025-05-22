@@ -1168,6 +1168,7 @@
                 if (thinkingMessage) {
                     thinkingMessage.remove();
                 }
+                console.log(response);
                 addMessageToChat('assistant', response);
             }).catch(error => {
                 if (thinkingMessage) {
