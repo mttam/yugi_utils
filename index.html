@@ -962,7 +962,9 @@
                 document.getElementById('chatError').textContent = 'Could not load format rules';
                 document.getElementById('chatError').classList.remove('hidden');
             }
-        }        function getFormatRules(format) {
+        }        
+        
+        function getFormatRules(format) {
             // Replace all spaces with underscores to match ruleset keys
             const formatKey = format.replace(/ /g, '_');
             return rulesets[formatKey] || rulesets['Advanced_Format'];
@@ -1142,6 +1144,7 @@
             if (!message && selectedCards.size === 0) return;
             // Get format rules
             loadRulesets();
+            console.log(rulesets)
             const selectedFormat = getFormatRules(currentFormat);
             const selectedBase = getFormatRules('Baseline_Rules')
             const fullMessage = `${selectedCardsInfo}${selectedBase}${selectedFormat}${message}` 
