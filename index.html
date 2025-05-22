@@ -940,35 +940,33 @@
         });
 
         // Format Selection
-        let rulesets;
+        let rulesets = null;
         let currentFormat = 'Advanced Format';
 
         async function loadRulesets() {
-            try {
-                const response = await fetch('ruleset.json');
-                if (!response.ok) {
-                    throw new Error(`Failed to load rulesets: ${response.status}`);
+                try {
+                    const response = await fetch('ruleset.json');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    rulesets = await response.json();
+                    return rulesets;  // Restituisci i rulesets caricati
+                } catch (error) {
+                    console.error('Error loading rulesets:', error);
+                    document.getElementById('chatError').textContent = 'Error loading format rules';
+                    document.getElementById('chatError').classList.remove('hidden');
+                    return null;  // Restituisci null in caso di errore
                 }
-                rulesets = await response.json();
-                
-                // Load saved format preference
-                const savedFormat = localStorage.getItem('selectedFormat');
-                if (savedFormat) {
-                    currentFormat = savedFormat;
-                    document.getElementById('formatSelect').value = savedFormat;
-                }
-            } catch (error) {
-                console.error('Error loading rulesets:', error);
-                document.getElementById('chatError').textContent = 'Could not load format rules';
-                document.getElementById('chatError').classList.remove('hidden');
-            }
-        }        
+            }    
         
         function getFormatRules(format) {
-            // Replace all spaces with underscores to match ruleset keys
-            const formatKey = format.replace(/ /g, '_');
-            return rulesets[formatKey] || rulesets['Advanced_Format'];
-        }
+                if (!rulesets) {
+                    return ''; // Return empty string if rulesets not loaded
+                }
+                // Replace all spaces with underscores to match ruleset keys
+                const formatKey = format.replace(/ /g, '_');
+                return rulesets[formatKey] || rulesets['Advanced_Format'] || '';
+            }
 
 
         let chatHistory = [];
@@ -1131,7 +1129,8 @@
             chatInput.placeholder = selectedCardsText 
                 ? `Selected cards: ${selectedCardsText}` 
                 : "Ask a ruling question...";
-        }        function sendChatMessage() {
+        }        
+        async function sendChatMessage() {
             const message = document.getElementById('chatInput').value.trim();
             const selectedCardsInfo = Array.from(selectedCards)
                 .map(cardId => {
@@ -1142,11 +1141,20 @@
                 .join('\n\n');
 
             if (!message && selectedCards.size === 0) return;
+
+            // Ensure rulesets are loaded
+            if (!rulesets) {
+                const loaded = await loadRulesets();
+                if (!loaded) {
+                    document.getElementById('chatError').textContent = 'Error loading format rules';
+                    document.getElementById('chatError').classList.remove('hidden');
+                    return;
+                }
+            }
+
             // Get format rules
-            loadRulesets();
-            console.log(rulesets)
             const selectedFormat = getFormatRules(currentFormat);
-            const selectedBase = getFormatRules('Baseline_Rules')
+            const baselineRules = getFormatRules('Baseline_Rules');
             const fullMessage = `${selectedCardsInfo}${selectedBase}${selectedFormat}${message}` 
                 ? `Cards involved:\n${selectedCardsInfo}\nFormat Selected${selectedFormat}\nQuestion: ${message}`
                 : message;
@@ -1177,7 +1185,9 @@
                 addMessageToChat('assistant', 'Sorry, there was an error processing your request.');
                 console.error('Error calling AI model:', error);
             });
-        }        function addMessageToChat(role, content) {
+        }        
+        
+        function addMessageToChat(role, content) {
             const chatMessages = document.getElementById('chatMessages');
             
             // Clear initial message if it exists
