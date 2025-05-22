@@ -1155,7 +1155,7 @@
             // Get format rules
             const selectedFormat = getFormatRules(currentFormat);
             const baselineRules = getFormatRules('Baseline_Rules');
-            const fullMessage = `${selectedCardsInfo}${selectedBase}${selectedFormat}${message}` 
+            const fullMessage = `${selectedCardsInfo}${baselineRules}${selectedFormat}${message}` 
                 ? `Cards involved:\n${selectedCardsInfo}\nFormat Selected${selectedFormat}\nQuestion: ${message}`
                 : message;
 
