@@ -485,6 +485,20 @@
                                 <label class="block mb-2">Search Cards</label>
                                 <input type="text" id="chatCardSearch" placeholder="Card name..." class="w-full p-2 border rounded bg-gray-100 dark:bg-dark-700">
                             </div>
+                            <div class="mb-4">
+                                <label class="block mb-2">Format</label>
+                                <select id="formatSelect" class="w-full p-2 border rounded bg-gray-100 dark:bg-dark-700">
+                                    <option value="Advanced Format">Advanced Format</option>
+                                    <option value="Goat Format">Goat Format</option>
+                                    <option value="Edison Format">Edison Format</option>
+                                    <option value="Tengu Plant Format">Tengu Plant Format</option>
+                                    <option value="Dragon Ruler Format">Dragon Ruler Format</option>
+                                    <option value="HAT Format">HAT Format</option>
+                                    <option value="Nekroz Format">Nekroz Format</option>
+                                    <option value="PePe Format">PePe Format</option>
+                                    <option value="Zoodiac Format">Zoodiac Format</option>
+                                </select>
+                            </div>
                             <div id="chatCardResults" class="h-64 overflow-y-auto bg-gray-100 dark:bg-dark-700 rounded p-2">
                                 <div class="text-center text-gray-500 dark:text-gray-400">Search for cards to add to your question</div>
                             </div>
@@ -925,7 +939,40 @@
             });
         });
 
-        // Judge AI Chat Functions
+        // Format Selection
+        let rulesets;
+        let currentFormat = 'Advanced Format';
+
+        async function loadRulesets() {
+            try {
+                const response = await fetch('ruleset.json');
+                if (!response.ok) {
+                    throw new Error(`Failed to load rulesets: ${response.status}`);
+                }
+                rulesets = await response.json();
+                
+                // Load saved format preference
+                const savedFormat = localStorage.getItem('selectedFormat');
+                if (savedFormat) {
+                    currentFormat = savedFormat;
+                    document.getElementById('formatSelect').value = savedFormat;
+                }
+            } catch (error) {
+                console.error('Error loading rulesets:', error);
+                document.getElementById('chatError').textContent = 'Could not load format rules';
+                document.getElementById('chatError').classList.remove('hidden');
+            }
+        }
+
+        function getFormatRules(format) {
+            return rulesets[format.replace(' ', '_')] || rulesets['Advanced_Format'];
+        }
+
+        // Update the BASE_PROMPT to include format-specific rules
+        function getBotPrompt(formatRules) {
+            return `${BASE_PROMPT}\n\nThis question should be answered according to the following format's rules:\n${formatRules}`;
+        }
+        
         let chatHistory = [];
         let apiKey = null;
 
@@ -945,8 +992,6 @@
             }
         }
 
-        const BASE_PROMPT = 'devi agire come un judge ufficiale di Yu-Gi-Oh! Riceverai delle domande sul gioco, le sue regole e le interazioni tra le carte. Le tue risposte devono essere chiare, concise e corredate da spiegazioni dettagliate del processo di decisione del giudizio, includendo sempre citazioni da fonti ufficiali (ad esempio, il sito ufficiale di Yu-Gi-Oh! o le pagine ufficiali di Konami). Assicurati che ogni risposta fornisca il ragionamento alla base della decisione, indicandone il processo e citando le fonti ufficiali pertinenti.';
-
         async function callGeminiModel(prompt) {
             if (!apiKey) {
                 apiKey = await getApiKey();
@@ -955,10 +1000,14 @@
                 }
             }
 
+            // Get format rules
+            const formatRules = getFormatRules(currentFormat);
+            const fullPrompt = getBotPrompt(formatRules);
+
             const messageContent = [
                 {
                     type: "text",
-                    text: `${BASE_PROMPT}\n\nQuestion: ${prompt}`
+                    text: `${fullPrompt}\n\nQuestion: ${prompt}`
                 }
             ];
 
@@ -1311,6 +1360,16 @@
             document.getElementById('lp1').addEventListener('change', saveToLocalStorage);
             document.getElementById('lp2').addEventListener('change', saveToLocalStorage);
             
+            // Format Selection Handler
+            document.getElementById('formatSelect').addEventListener('change', (e) => {
+                currentFormat = e.target.value;
+                localStorage.setItem('selectedFormat', currentFormat);
+                
+                // Update chat placeholder to reflect format change
+                const chatInput = document.getElementById('chatInput');
+                chatInput.placeholder = `Ask a ruling question (${currentFormat})...`;
+            });
+
             // Set up UI components
             setupSectionToggles();
             setupDarkModeToggle();
