@@ -968,10 +968,6 @@
             return rulesets[formatKey] || rulesets['Advanced_Format'];
         }
 
-        // Update the BASE_PROMPT to include format-specific rules
-        function getBotPrompt(formatRules) {
-            return `${BASE_PROMPT}\n\nThis question should be answered according to the following format's rules:\n${formatRules}`;
-        }
 
         let chatHistory = [];
         let apiKey = null;
@@ -991,8 +987,9 @@
                 return null;
             }
         }
-
-        async function callGeminiModel(prompt) {
+        
+        let base_prompt = `Act as a Judge, an expert judge of the Yu-Gi-Oh! trading card game. Your task is to analyze the provided information and respond to a specific question regarding card interactions in a given Yu-Gi-Oh! game format. Provided Input: 1. Details of Involved Cards: [Text description of one or more Yu-Gi-Oh! cards, including names, types, official effects, ATK/DEF, attributes, etc.] 2. Format Rules: [Description of the specific Yu-Gi-Oh! game format rules (e.g., TCG Advanced, Goat Format, Master Duel specific period, specifying the reference Forbidden & Limited List, special mechanics like Speed Duel, etc.).] 3. User Question: [The specific question from the user that you need to answer, typically a gameplay scenario or a ruling request.] Required Output: Provide your response following the format and language of the user's input. Adopt a technical and precise tone unless the user specifies otherwise for a more conversational tone. Cards interact as follows: [Explain in detail how the cards interact with each other in the context of the specified Yu-Gi-Oh! format and in response to the user's question. Be clear, concise, and precise, based on official Yu-Gi-Oh! rules and card effects. If the provided information is ambiguous or incomplete, provide the best possible interpretation based on known official rules, mentioning any assumptions made.] Sources: [Cite specific Yu-Gi-Oh! rules or card effects that support your explanation. When possible, refer to sections of the official rulebook, official card texts, or established official rulings. Avoid speculation not supported by sources.] Additional Instructions: * Interpret card effects and format rules literally and logically, according to official Yu-Gi-Oh! conventions (e.g., PSCT - Problem-Solving Card Text, chain mechanics, damage calculation, etc.). * If the question concerns a specific ruling, provide an explanation of that ruling. * Ensure the explanation is understandable for a player familiar with basic Yu-Gi-Oh! mechanics. * The response must be exclusively in the language provided by the user. * Prioritize rulings and official Konami mechanics. Example User Input Structure (to be filled with real data): Cards involved: Stardust Dragon (Synchro Monster): 1 Tuner + 1+ non-Tuner monsters When a card or effect is activated that would destroy a card(s) on the field (Quick Effect): You can Tribute this card; negate the activation, and if you do, destroy it. During the End Phase, if this effect was activated this turn (and was not negated): You can Special Summon this card from your GY. Format: Game Setup: 8000 Life Points, 5 starting hand cards. Field zones: 5 Monster Zones, 5 Spell/Trap Zones, 1 Field Zone, 1 Extra Deck Zone, 1 Graveyard Zone, 1 Banished Zone. Turn Structure: Draw Phase (draw 1 card, except for the player going first), Standby Phase, Main Phase 1 (Normal Summon/Set, activate Spells/Traps, change battle positions), Battle Phase (conduct attacks), Main Phase 2 (Normal Summon/Set if not done in MP1, activate Spells/Traps, change battle positions if not done in MP1), End Phase. Basic Card Types & Usage: Normal/Effect Monsters (summon, attack, defense), Spells (Normal, Quick-Play, Continuous, Equip, Field, Ritual - activated from hand/field during main phases, Quick-Play can be activated during Battle Phase or chained), Traps (Normal, Continuous, Counter - activated from field, can be chained, Counter Traps are Spell Speed 3). Basic Summoning: Normal Summon/Set (1 per turn, requires no Tribute for Level 4 or lower, 1 Tribute for Level 5-6, 2 Tributes for Level 7+), Tribute Summon, Special Summoning (by card effects, no limit per turn). Chain Mechanics: Spell Speeds 1 (Ignition, Normal Spell/Trap), 2 (Quick-Play Spell, Quick Effect, Normal Trap, Continuous Spell/Trap, Equip/Field Spell activation), 3 (Counter Trap). Chains resolve Last In First Out. Basic Interactions: Battle destruction (monster ATK vs. DEF/ATK), targeting (select specific card), negation (prevent activation/effect). Based on the 2010 April 1st TCG Forbidden & Limited List. Synchro Summoning is the primary Extra Deck mechanic. No Xyz, Pendulum, or Link Monsters exist. Synchro Monsters are summoned from the Extra Deck by sending 1 Tuner monster and 1 or more non-Tuner monsters from the field to the Graveyard whose combined Levels equal the Synchro Monster's Level. Continuous effects of monsters flipped face-up in the Damage Step become active before damage calculation. Hand traps like 'Effect Veiler' and 'D.D. Crow' are prominent and can be activated during either player's turn to disrupt plays. Question: how does it behave if a card says first destroy and then banish?`
+        async function callOpenRouterModel(prompt) {
             if (!apiKey) {
                 apiKey = await getApiKey();
                 if (!apiKey) {
@@ -1000,14 +997,10 @@
                 }
             }
 
-            // Get format rules
-            const formatRules = getFormatRules(currentFormat);
-            const fullPrompt = getBotPrompt(formatRules);
-
             const messageContent = [
                 {
                     type: "text",
-                    text: `${fullPrompt}\n\nQuestion: ${prompt}`
+                    text: `${base_prompt}\n${prompt}`
                 }
             ];
 
@@ -1147,9 +1140,12 @@
                 .join('\n\n');
 
             if (!message && selectedCards.size === 0) return;
-            
-            const fullMessage = selectedCardsInfo 
-                ? `Cards involved:\n${selectedCardsInfo}\n\nQuestion: ${message}`
+            // Get format rules
+            loadRulesets();
+            const selectedFormat = getFormatRules(currentFormat);
+            const selectedBase = getFormatRules('Baseline_Rules')
+            const fullMessage = `${selectedCardsInfo}${selectedBase}${selectedFormat}${message}` 
+                ? `Cards involved:\n${selectedCardsInfo}\nFormat Selected${selectedFormat}\nQuestion: ${message}`
                 : message;
 
             document.getElementById('chatInput').value = '';
@@ -1164,7 +1160,7 @@
             const thinkingMessage = addMessageToChat('assistant', 'Judge AI is thinking...');
             
             // Call AI model and update chat
-            callGeminiModel(fullMessage).then(response => {
+            callOpenRouterModel(fullMessage).then(response => {
                 // Remove thinking message and add AI response
                 if (thinkingMessage) {
                     thinkingMessage.remove();
